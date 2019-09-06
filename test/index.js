@@ -4,121 +4,196 @@ var expect = require('chai').expect;
 
 describe("Simple class declaration", ()=> {
 	fancy.stdout().stderr().
-	it('Simple private property', output => {
+	it('Simple protected property', output => {
 		execute(`
 			class MyClass {
-				private x = 100;
+				protected x = 100;
+			}
+			class MyClassEx extends MyClass {
 				foo() {
-					return x;
+					console.log(x);
 				}
 			}
-			console.log((new MyClass).foo());
+			(new MyClassEx).foo();
 		`);
 		expect(output.stdout).to.eql('100\n');
 	});
 
 	fancy.stdout().stderr().
-	it('Simple static private property', output => {
+	it('Simple static protected property', output => {
 		execute(`
 			class MyClass {
-				private static x = 200;
+				protected static x = 200;
+			}
+			class MyClassEx extends MyClass {
 				static foo() {
-					return x;
+					console.log(x);
 				}
 			}
-			console.log(MyClass.foo());
+			MyClassEx.foo();
 		`);
 		expect(output.stdout).to.eql('200\n');
 	});
 });
 
-describe("Simple object literal", ()=> {
+describe("Simple super access with protected property", ()=> {
 	fancy.stdout().stderr().
-	it('Simple private property', output => {
+	it('Simple super call', output => {
 		execute(`
-			var obj = {
-				private x: 300,
+			class MyClass {
+				protected static x = 100;
+				static foo() {
+					console.log(x);
+				}
+
+				protected x = 200;
 				foo() {
-					return x;
+					console.log(x);
 				}
 			}
+			class MyClassEx extends MyClass {
+				static foo() {
+					super.foo();
+				}
+				foo() {
+					super.foo();
+				}
+			}
+			MyClassEx.foo();
+			(new MyClassEx).foo();
+		`);
+		expect(output.stdout).to.eql('100\n200\n');
+	});
+});
+
+describe("Visibility management", ()=> {
+	fancy.stdout().stderr().
+	it('Override inherited protected property', output => {
+		execute(`
+			var x = 'outer';
+			class MyClass {
+				protected x = 100;
+			}
+			class MyClassEx extends MyClass {
+				private as x;
+				foo() {
+					console.log(x);
+				}
+			}
+			class MyClassEx2 extends MyClassEx {
+				check() {
+					console.log(x);
+				}
+			}
+			(new MyClassEx).foo();
+			(new MyClassEx2).check();
+		`);
+		expect(output.stdout).to.eql('100\nouter\n');
+	});
+
+	fancy.stdout().stderr().
+	it('Override and update inherited protected property', output => {
+		execute(`
+			class MyClass {
+				protected x = 100;
+				foo() {
+					console.log(x);
+				}
+			}
+			class MyClassEx extends MyClass {
+				private as x = 200;
+				foo() {
+					super.foo();
+					console.log(x);
+				}
+			}
+			(new MyClassEx).foo();
+		`);
+		expect(output.stdout).to.eql('200\n200\n');
+	});
+
+	fancy.stdout().stderr().
+	it('make alias of inherited protected property', output => {
+		execute(`
+			var x = 'outer';
+			class MyClass {
+				protected x = 100;
+			}
+			class MyClassEx extends MyClass {
+				private x as y = 200;  // x hidden in private scope
+				foo() {
+					console.log(y);
+					console.log(x);
+				}
+			}
+			class MyClassEx2 extends MyClassEx {
+				foo() {
+					super.foo();
+					console.log(x);
+				}
+			}
+			(new MyClassEx2).foo();
+		`);
+		expect(output.stdout).to.eql('200\nouter\n100\n');
+	});
+
+	fancy.stdout().stderr().
+	it('make alias and override of inherited protected property', output => {
+		execute(`
+			var x = 'outer';
+			class MyClass {
+				protected x = 100;
+			}
+			class MyClassEx extends MyClass {
+				protected x as y = 200;  // x hidden in protected scope
+				foo() {
+					console.log(y);
+					console.log(x);
+				}
+			}
+			class MyClassEx2 extends MyClassEx {
+				foo() {
+					super.foo();
+					console.log(x);
+				}
+			}
+			(new MyClassEx2).foo();
+		`);
+		expect(output.stdout).to.eql('200\nouter\nouter\n');
+	});
+});
+
+describe("Internal access", ()=> {
+	fancy.stdout().stderr().
+	it('In prototype and class method', output => {
+		execute(`
+			class MyClass {
+				internal protected x = new Object;
+			}
+			class MyClassEx extends MyClass {
+				foo() {
+					return x === this[internal.x];
+				}
+				static foo(obj) {
+					return super.prototype[internal.x] === obj[internal.x];
+				}
+			}
+			var obj = new MyClassEx;
 			console.log(obj.foo());
+			console.log(MyClassEx.foo(obj));
 		`);
-		expect(output.stdout).to.eql('300\n');
-	});
-});
-
-describe("Constructor method", ()=> {
-	fancy.stdout().stderr().
-	it('Normal non extends constructor', output => {
-		execute(`
-			class MyClass {
-				private x = 400;
-				constructor() {
-					console.log(x);
-				}
-			}
-			new MyClass;
-		`);
-		expect(output.stdout).to.eql('400\n');
-	});
-
-	fancy.stdout().stderr().
-	it('Normal extends constructor', output => {
-		execute(`
-			class MyClass extends Object {
-				private x = 500;
-				constructor() {
-					super();
-					console.log(x);
-				}
-			}
-			new MyClass;
-		`);
-		expect(output.stdout).to.eql('500\n');
-	});
-});
-
-describe("Private scope access", ()=> {
-	fancy.stdout().stderr().
-	it('In prototype method', output => {
-		execute(`
-			class MyClass {
-				internal private x = new Object;
-				foo(b) {
-					return x === b[internal.x];
-				}
-			}
-
-			console.log((new MyClass).foo(new MyClass));
-		`);
-		expect(output.stdout).to.eql('true\n');
-	});
-
-	fancy.stdout().stderr().
-	it('In class method', output => {
-		execute(`
-			class MyClass {
-				internal private x = 100;
-				static foo(a) {
-					return a[internal.x];
-				}
-			}
-
-			console.log(MyClass.foo(new MyClass));
-		`);
-		expect(output.stdout).to.eql('100\n');
+		expect(output.stdout).to.eql('true\ntrue\n');
 	});
 });
 
 describe("Hijack method", ()=> {
 	fancy.stdout().stderr().
-	it('Try same private name access', output => {
+	it('Try same protected name access', output => {
 		execute(`
 			var x = 'global';
 
 			class MyClass {
-				private x = 100;
+				protected x = 100;
 			}
 
 			class OtherClass {
@@ -136,44 +211,29 @@ describe("Hijack method", ()=> {
 	});
 
 	fancy.stdout().stderr().
-	it('Try same private name access by object literal ', output => {
+	it('Try force set prototype', output => {
 		execute(`
 			var x = 'global';
 
 			class MyClass {
-				private x = 100;
-			}
-
-			var b = {
-				private x: 200,
+				protected x = 100;
 				foo() {
 					console.log(x);
 				}
 			}
 
-			var a = new MyClass;
-			b.foo.call(a);
-		`);
-		// expect(output.stderr.length).to.eql(0);
-		expect(output.stdout).to.eql('undefined\n');
-	});
-
-
-	fancy.stdout().stderr().
-	it('Try force internal access', output => {
-		execute(`
-			var publicMember = new Object;
-			class MyClass {
-				private x = 100;
-				static foo(a) {
-					console.log([typeof internal, typeof internal.x, a[internal.x] === publicMember]);
+			class OtherClass {
+				private x = 200;
+				foo() {
+					console.log(x);
 				}
 			}
-			var a = new MyClass;
-			a["undefined"] = publicMember;
-			MyClass.foo(a);
+
+			var b = new OtherClass;
+			Object.setPrototypeOf(b, MyClass.prototype);
+			OtherClass.prototype.foo.call(b);
+			b.foo(); // point to MyClass.prototype.foo
 		`);
-		// expect(output.stderr.length).to.eql(0);
-		expect(output.stdout).to.eql('object,undefined,true\n');
+		expect(output.stdout).to.eql('200\nundefined\n');
 	});
 });

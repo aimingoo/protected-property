@@ -1,8 +1,6 @@
 # Protected property
 
-
-
-The proposal is enhance of private property of class and object literals.(@[here](https://github.com/aimingoo/protected-property)).
+The proposal is enhance of private property of class and object literals.(@[here](https://github.com/aimingoo/private-property)).
 
 The proposal will implementation `protected`  keyword in class definition:
 
@@ -116,7 +114,7 @@ Override `protected` accessibility at child-classes. ex:
 
 ```java
 class MyClass {
-  private x = 100;
+  protected x = 100;
 }
 
 class MyClassEx extends MyClass {
