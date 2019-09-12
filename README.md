@@ -1,34 +1,28 @@
 # Protected property
 
-The proposal is enhance of private property of class and object literals.(@[here](https://github.com/aimingoo/private-property)).
+The proposal is an enhancement of private property of class and object literals.(@[here](https://github.com/aimingoo/private-property)).
 
-The proposal will implementation `protected`  keyword in class definition:
+The proposal will provide `protected` keyword and implementations in class definitions and has the following advantages:
 
-* Simple, prototype based
-
-  No new components, concept cleanly.
-  
-* Easy to implement, less changes.
+* Simple and prototype based
+* No new components and less changes. 
+* Easy to implement and clean concept.
 
 
+The proposal is not tc39 officailly now but implemented at [prepack-core with proposal-protected-property](https://github.com/aimingoo/prepack-core/tree/proposal-protected-property) ([@here](https://github.com/aimingoo/prepack-core/tree/proposal-protected-property)).
 
+You could see more test case in this project ([@here](#testcases)).
 
-The proposal is not tc39 formal now. but have a implement at [prepack-core with proposal-protected-property](https://github.com/aimingoo/prepack-core/tree/proposal-protected-property) ([@here](https://github.com/aimingoo/prepack-core/tree/proposal-protected-property)).
+## Usage
 
-You can try testcase in current project ([@here](#testcases)).
+**1. How to declare *protected* properties in a class definition** 
 
-
-
-## Syntax design
-
-**1. define protected property in class definition** 
-
-Same of private property definition, examples:
+The usage of  keyword *protected* is same as private property definition,  for example:
 
 ```java
-// property define in class syntax
+// define protected property in class
 class f {
-    // protected property for per-instances
+    // protected property will be created per instance
     protected data = 100;
     // protected property for class
     protected static data = 200;
@@ -38,7 +32,7 @@ class f {
     ...
 }
 
-// method and accessor define in class syntax
+// define protected method and accessor in class
 class f {
     protected get data() { ... };
     protected foo() { ... };
@@ -51,11 +45,9 @@ class f {
 // (no support)
 ```
 
+**2. How to access protected properties**
 
-
-**2. access protected properties**
-
-Same of private property access:
+It is also same as private property access:
 
 ```javascript
 class MyClass {
@@ -73,9 +65,11 @@ class MyClassEx extends MyClass {
 
 
 
-**3. when identifier impact of inherited name**
+**3. How to solve identifier (property name) corrpution in child classes**
 
-If identifier impact, you can use `private as` syntax in child class. ex:
+In some occasions, you will want to give an alias for an inherited protected property. 
+
+you can use `private as` syntax in child class:
 
 ```java
 class MyClass {
@@ -83,7 +77,7 @@ class MyClass {
 }
 
 class MyClassEx extends MyClass {
-  private x as y; // when you want access inherited name with newly
+  private x as y; // when you want access inherited protected property with a new identifier
   foo(x) {
     console.log(x); // yes, arguments-x
     console.log(y); // alias of inhrited `x`
@@ -91,9 +85,7 @@ class MyClassEx extends MyClass {
 }
 ```
 
-
-
-And as a syntax extentions, you can use alias for private in current context. ex:
+And as a syntactic sugar,  you can also use *as* keyword to declare an alias for a defined private property:
 
 ```java
 class MyClass {
@@ -106,19 +98,17 @@ class MyClass {
 }
 ```
 
+**4. Update accessibility in child classes**
 
-
-**4. update accessibility in child classes**
-
-Override `protected` accessibility at child-classes. ex:
+Override `protected` accessibility in child class:
 
 ```java
 class MyClass {
-  protected x = 100;
+  private x = 100;
 }
 
 class MyClassEx extends MyClass {
-  private as x; // set `private` for inherited protected `x`
+  protected as x; // set `private` for inherited protected `x`
 }
 
 class MyClassEx2 extends MyClassEx {
@@ -130,16 +120,16 @@ class MyClassEx2 extends MyClassEx {
 
 
 
-## Syntax summary
+## Syntax features
 
 * Limits
 
-  * no support computed property name in private or protected
-  
-* define accessibility with `private` and `protected`.
+  * Not support computed property name both in private and protect properties!
+
+* Define accessor with `private` and `protected `keyword.
 
   ```javascript
-  Ex:
+  Example:
     private x;
   
   Syntax:
@@ -147,9 +137,9 @@ class MyClassEx2 extends MyClassEx {
   <private|protected> [static] [get | set] methodName ( argumentsList ) { … }
   ```
 
-   > NOTE: async and generator supported.
+   > NOTE: support async and generator.
 
-* enable private member access in internal
+* Allow private member access in internal
 
   ```javascript
   Ex:
@@ -159,11 +149,11 @@ class MyClassEx2 extends MyClassEx {
   <internal> <private|protected> [get | set] methodName ( argumentsList ) { … }
   ```
 
-   > NOTE: the internal scope is current class for private, and include his child-classes for protected properties.
-   > 
-   > NOTE: the `internal` prefix can not support for `static` definition.
-  
-* using identifier to access private members
+   > NOTE: The scope for private is the current class. The one for protected properties include his child-classes.
+   >
+   > NOTE: The `internal` prefix can not support for `static` definition.
+
+* Use identifier to access private members
 
   ```javascript
   Ex:
@@ -172,8 +162,8 @@ class MyClassEx2 extends MyClassEx {
   Identifier::
     IdentifierName but not ReservedWord.
   ```
-  
-* using internal scope reference for instances
+
+* Use internal scope reference for instances
 
   ```javascript
   Ex:
@@ -181,12 +171,12 @@ class MyClassEx2 extends MyClassEx {
   
   object[<internal>.name]
   ```
-  
+
   > NOTE: the reference is computed property for instance object of AClass.
 >
-  > NOTE: the computed property name is propertyReference base on ***internal*** object. the latter is names map of internal member in AClass.
+>NOTE: the computed property name is propertyReference base on ***internal*** object. the latter is names map of internal member in AClass.
 
-* create alias, will hide inheritance name that exists in current private scope
+* Create alias, will hide inheritance name that exists in current private scope
 
   ```javascript
   Ex:
@@ -201,7 +191,7 @@ class MyClassEx2 extends MyClassEx {
   >
   > NOTE: maybe, the `private ... as` can support privated name in current scope.
 
-* override accessibility or internal access prefix for inherited protected property, and/or update value
+* Override accessor or internal access prefix for inherited protected property,  and/or update value
 
   ```javascript
   Ex:
@@ -218,7 +208,7 @@ class MyClassEx2 extends MyClassEx {
 
 ## Concepts
 
-The protected property is object instance's private member too, it define in class definition only. private and protected is all of object's private scope/domain.
+The protected property is object instance's private member too, it was defined only in class definition. private and protected is all of object's private scope/domain.
 
 If a private member is protected, the member will be visible in current class and its all child-classes. For protected property, the orginal value, attributes of property descriptor, and internal access privilege are inherited too.
 
@@ -264,7 +254,7 @@ Done.
   Let *fromScope* to be *targetObject*.[[Protected]]. Let *toScope* to be *targetObject*.[[Private]] when *downgrading*, otherwise set *toScope* equ  *fromScope*.
 
   If `downgrading` is true, let *privateSymbol* to be private-key of name `b` from protected members by *fromScope*.\[\[Get\]\]() method, and create new property named `b` in *toScope* , set its value to be *privateSymbol*.
-  
+
   Call setInvisibleInScope(*fromScope*, 'b'), and call setVisibleInScope(*toScope*, 'b').
 
 Done.
@@ -272,11 +262,11 @@ Done.
 #### syntax private a as b
 
 - in PropertyDefinitionEvaluation()
-  
+
   Let *targetScope* to be *targetObject*.[[Protected]] for syntax `protected...`, otherwise set to *targetObject*.[[Private]].
-  
+
   Let *privateSymbol* to be private-key of name `a` from protected members by *targetObject*.\[\[Protected\]\].\[\[Get\]\]() method, and create new property named `b` in *targetScope*, set its value to be *privateSymbol*. 
-  
+
   Call setInvisibleInScope(*targetScope*, 'a'), and call setVisibleInScope(*targetScope*, 'b'). 
 
 Done.
