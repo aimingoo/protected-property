@@ -22,7 +22,7 @@ The usage of  keyword *protected* is same as private property definition,  for e
 ```java
 // define protected property in class
 class f {
-    // protected property will be created per instance
+    // protected property will be created at prototype
     protected data = 100;
     // protected property for class
     protected static data = 200;
@@ -98,9 +98,9 @@ class MyClass {
 }
 ```
 
-**4. Update accessibility in child classes**
+**4. Update visibility in child classes**
 
-Override `protected` accessibility in child class:
+Override `protected` visibility in child class:
 
 ```java
 class MyClass {
@@ -120,13 +120,9 @@ class MyClassEx2 extends MyClassEx {
 
 
 
-## Syntax features
+## Syntax summary
 
-* Limits
-
-  * Not support computed property name both in private and protect properties!
-
-* Define accessor with `private` and `protected `keyword.
+* Define visibility with `private` and `protected `keyword.
 
   ```javascript
   Example:
@@ -191,7 +187,7 @@ class MyClassEx2 extends MyClassEx {
   >
   > NOTE: maybe, the `private ... as` can support privated name in current scope.
 
-* Override accessor or internal access prefix for inherited protected property,  and/or update value
+* Override visibility or internal access prefix for inherited protected property,  and/or update value
 
   ```javascript
   Ex:
@@ -202,7 +198,7 @@ class MyClassEx2 extends MyClassEx {
   [internal] <private|protected> [static] as [get | set] <parentProtectedName>( argumentsList ) { … }
   ```
 
-  > NOTE: internal access privilege will inherited for `protected` definition, you can reset it with  `internal` prefix in child-classes base on `<private|protected> as` syntax.
+  > NOTE: internal access privilege will inherited for `protected` definition, you can reset it with `internal` prefix in child-classes base on `<private|protected> as` syntax.
 
 
 
@@ -249,9 +245,9 @@ Done.
 
 - in PropertyDefinitionEvaluation()
 
-  Let *downgrading* to be true when `b` protected and will set accessibility to `private`, otherwise false.
+  Let *downgrading* to be true when `b` protected and will set visibility to `private`, otherwise false.
 
-  Let *fromScope* to be *targetObject*.[[Protected]]. Let *toScope* to be *targetObject*.[[Private]] when *downgrading*, otherwise set *toScope* equ  *fromScope*.
+  Let *fromScope* to be *targetObject*.[[Protected]]. Let *toScope* to be *targetObject*.[[Private]] when *downgrading*, otherwise set *toScope* equ *fromScope*.
 
   If `downgrading` is true, let *privateSymbol* to be private-key of name `b` from protected members by *fromScope*.\[\[Get\]\]() method, and create new property named `b` in *toScope* , set its value to be *privateSymbol*.
 
@@ -278,7 +274,7 @@ Done.
 
 - [x] Class definition
 - [x] protected property features
-  - [x] override accessibility
+  - [x] override visibility
   - [x] private *\<parentProtectedName\>* as \<*alias*\>
   - [x] (un)set internal access privilege
 - [ ] destructuring assignment (maybe)
